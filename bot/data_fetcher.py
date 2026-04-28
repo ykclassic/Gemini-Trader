@@ -8,13 +8,14 @@ load_dotenv()
 class DataFetcher:
     def __init__(self):
         """
-        Initializes the exchange connection using Bybit.
-        Bybit is used here to bypass regional restrictions often encountered 
-        with Binance on GitHub Actions.
+        Initializes the exchange connection using KuCoin.
+        KuCoin is generally more permissive with GitHub Action IP ranges 
+        compared to Binance and Bybit.
         """
-        self.exchange = ccxt.bybit({
-            'apiKey': os.getenv('BYBIT_API_KEY'),
-            'secret': os.getenv('BYBIT_SECRET_KEY'),
+        self.exchange = ccxt.kucoin({
+            'apiKey': os.getenv('KUCOIN_API_KEY'),
+            'secret': os.getenv('KUCOIN_SECRET_KEY'),
+            'password': os.getenv('KUCOIN_PASSPHRASE'), # KuCoin requires a third 'Passphrase' key
             'enableRateLimit': True,
             'options': {
                 'defaultType': 'spot'
@@ -23,11 +24,11 @@ class DataFetcher:
 
     def fetch_ohlcv(self, symbol, timeframe='1h', limit=500):
         """
-        Fetches historical candle data from Bybit.
-        Automatically handles symbol formatting (e.g., BTC/USDT).
+        Fetches historical candle data from KuCoin.
+        Handles data mapping for the Indicator Engine.
         """
         try:
-            # Bybit OHLCV fetch via CCXT
+            # KuCoin fetch via CCXT
             data = self.exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
             
             if not data:
@@ -40,17 +41,17 @@ class DataFetcher:
             # Converting timestamp to readable datetime
             df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
             
-            # Ensure numeric types for calculations
+            # Ensure numeric types
             cols = ['open', 'high', 'low', 'close', 'volume']
             df[cols] = df[cols].apply(pd.to_numeric)
             
             return df
         except Exception as e:
-            print(f"Error fetching data from Bybit for {symbol}: {e}")
+            print(f"Error fetching data from KuCoin for {symbol}: {e}")
             return pd.DataFrame()
 
     def fetch_ticker_price(self, symbol):
-        """Fetches the latest ticker price for real-time tracking."""
+        """Fetches the latest ticker price."""
         try:
             ticker = self.exchange.fetch_ticker(symbol)
             return ticker['last']
