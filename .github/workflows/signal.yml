@@ -1,0 +1,25 @@
+[span_17](start_span)#
+name: Crypto Signal Engine
+on:
+  schedule:
+    - cron: '0 */4 * * *'   # Every 4 hours
+    - cron: '*/15 9-17 * * 1-5' # Every 15 min during market hours
+  push:
+    branches: [main, dev]
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run Engine
+        env:
+          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python -m bot.main
