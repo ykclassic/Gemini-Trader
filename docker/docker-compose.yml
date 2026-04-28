@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  signal-engine:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: crypto_signal_bot
+    restart: always
+    env_file:
+      - ../config/.env
+    volumes:
+      - ../data:/app/data         # Persists signals.db across container restarts
+      - ../logs:/app/logs         # Persists runtime logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "3"
