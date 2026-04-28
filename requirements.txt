@@ -1,0 +1,6 @@
+ccxt
+pandas-ta
+pandas
+pyyaml
+python-dotenv
+requests
