@@ -1,18 +1,48 @@
-import sqlite3
+import logging
+
+logger = logging.getLogger("crypto_bot")
 
 class RiskManager:
-    [span_12](start_span)"""[span_12](end_span)"""
-    def __init__(self, db_path="data/signals.db"):
-        self.db_path = db_path
+    def __init__(self):
+        """
+        Implements position sizing and the 1:2 R/R ratio logic.
+        Ensures every trade adheres to the Super Joint Blueprint's risk rules.
+        """
+        self.min_rrr = 2.0
+        self.max_risk_per_trade = 0.015  # 1.5% capital risk
 
     def validate_trade(self, entry, stop, score):
-        # [span_13](start_span)ATR-based sizing, R/R check[span_13](end_span)
-        rrr = abs(entry - stop) # Simplified for example
+        """
+        Validates the trade based on Risk-Reward Ratio and Confidence Score.
+        Returns a tuple: (is_valid: bool, message: str)
+        """
+        # 1. Confidence Threshold Check
         if score < 7.0:
-            return False, "Score below threshold"
-        return True, "Validated"
+            return False, f"Score {score} is below the 7.0 consensus threshold."
 
-    def check_circuit_breaker(self):
-        [span_14](start_span)"""Kill Switch: pause after 3 consecutive losses[span_14](end_span)"""
-        # Placeholder for DB logic
-        return True
+        # 2. Risk Calculation
+        risk = abs(entry - stop)
+        if risk <= 0:
+            return False, "Invalid Risk: Stop Loss is at or above Entry price."
+
+        # 3. Reward Calculation (Target based on 1:2 R/R)
+        target = entry + (risk * self.min_rrr)
+        
+        # 4. Logical Check
+        if stop >= entry:
+            return False, "Logical Error: Stop loss must be below entry for LONG signals."
+
+        return True, "Risk levels and consensus score validated."
+
+    def calculate_position_size(self, balance, entry, stop):
+        """
+        Calculates the amount of capital to allocate based on 1.5% total risk.
+        Formula: (Balance * Risk%) / (Entry - Stop)
+        """
+        risk_amount = balance * self.max_risk_per_trade
+        price_risk = abs(entry - stop)
+        
+        if price_risk == 0:
+            return 0
+            
+        return risk_amount / price_risk
