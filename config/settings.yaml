@@ -1,0 +1,23 @@
+[span_4](start_span)#
+trading:
+  symbols: ["BTC/USDT", "ETH/USDT", "SOL/USDT"]
+  timeframes: ["15m", "1h", "4h"]
+  consensus_threshold: 7.0
+
+indicators:
+  ema_ribbon: [8, 13, 21, 50, 100, 200]
+  rsi:
+    period: 14
+    bull_regime: {ob: 80, os: 40}
+    bear_regime: {ob: 60, os: 20}
+    default: {ob: 70, os: 30}
+  stoch_rsi: {k: 3, d: 3, rsi_len: 14, stoch_len: 14}
+  atr_period: 14
+  supertrend: {period: 10, multiplier: 3}
+
+risk: #[span_4](end_span)
+  max_risk_per_trade_percent: 1.5
+  min_rrr: 2.0
+  max_correlated_trades: 3
+  weekly_drawdown_limit: 0.10
+  daily_loss_limit: 0.04
