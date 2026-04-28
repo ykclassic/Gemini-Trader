@@ -1,13 +1,31 @@
 class SignalFormatter:
-    [span_15](start_span)"""[span_15](end_span)"""
+    def __init__(self):
+        """
+        Prepares and cleans trade data for Discord visualization.
+        """
+        pass
+
     @staticmethod
     def format_discord_embed(data):
-        return {
-            "title": f"🔔 {data['symbol']} | {data['side']} | {data['timeframe']}",
+        """
+        Creates a structured dictionary for the Discord Webhook payload.
+        """
+        symbol = data.get('symbol', 'Unknown')
+        side = data.get('side', 'N/A')
+        score = data.get('score', 0.0)
+        
+        # 3066993 is a green-ish color, 15158332 is a red-ish color
+        color = 3066993 if side == "LONG" else 15158332
+        
+        embed = {
+            "title": f"🚀 NEW SIGNAL: {symbol} ({side})",
+            "description": f"The engine has reached a consensus score of **{score}/10**.",
+            "color": color,
             "fields": [
-                {"name": "📍 Entry Zone", "value": f"${data['entry']}", "inline": True},
-                {"name": "🛑 Stop Loss", "value": f"${data['stop']}", "inline": True},
-                {"name": "🧠 Confidence", "value": f"{data['score']} / 10", "inline": False}
+                {"name": "Entry Price", "value": f"${data.get('entry', 0):,.2f}", "inline": True},
+                {"name": "Stop Loss", "value": f"${data.get('stop', 0):,.2f}", "inline": True},
+                {"name": "Take Profit", "value": f"${data.get('tp', 0):,.2f}", "inline": True}
             ],
-            "color": 3066993 if data['side'] == "LONG" else 15158332
+            "footer": {"text": "Gemini-Trader | Unified Intelligence Engine"}
         }
+        return embed
