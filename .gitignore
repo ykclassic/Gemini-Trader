@@ -1,0 +1,16 @@
+# Environment & Secrets
+.env
+config/.env
+
+# Local Data & Logs
+data/*.db
+logs/*.log
+__pycache__/
+*.pyc
+
+# Docker
+docker/.docker-compose.lock
+
+# OS Files
+.DS_Store
+Thumbs.db
