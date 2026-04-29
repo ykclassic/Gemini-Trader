@@ -1,55 +1,52 @@
-import pandas as pd
+import logging
+
+logger = logging.getLogger("crypto_bot")
 
 class ConsensusScorer:
     def __init__(self):
         """
-        Initializes the Consensus Scorer which aggregates signals across 
-        technical, structural, and on-chain dimensions.
+        The 'Brain' of the system. Aggregates technical, structural, 
+        and intelligence layers into a single decision score (0-10).
         """
+        # Weights assigned based on historical reliability
         self.weights = {
-            "trend": 2.0,
-            "momentum": 1.5,
-            "volatility": 1.0,
-            "volume": 1.0,
-            "smc": 2.5,
-            "onchain": 2.0
+            "technicals": 3.0,  # Strategy Engine (RSI, EMA, etc.)
+            "structure": 4.0,   # SMC Engine (CHoCH, Order Blocks)
+            "intelligence": 3.0 # Neural Layer & MTF Alignment
         }
 
-    def calculate_score(self, df, strategies_results):
+    def calculate_score(self, tech_results, smc_data, neural_conf, mtf_aligned):
         """
-        Evaluates signals across multiple dimensions to produce a 0-10 confidence score.
-        A score >= 7.0 is required to generate a final signal.
+        Calculates the final consensus score.
+        :param tech_results: Dict from StrategyEngine
+        :param smc_data: Dict from SMCEngine
+        :param neural_conf: Float (0.0-1.0) from NeuralLayer
+        :param mtf_aligned: Boolean from MTFEngine
         """
-        if df.empty:
-            return 0.0
-
         score = 0.0
-        last = df.iloc[-1]
 
-        # 1. Trend Alignment (Max 2.0 pts)
-        if 'EMA_200' in last and last['close'] > last['EMA_200']:
-            score += 1.0
-        if 'SUPERTd_10_3.0' in last and last['SUPERTd_10_3.0'] == 1:
-            score += 1.0
+        # 1. Technical Contribution (Max 3.0)
+        if tech_results:
+            long_hits = list(tech_results.values()).count("LONG")
+            tech_ratio = long_hits / len(tech_results)
+            score += tech_ratio * self.weights["technicals"]
 
-        # 2. Momentum (Max 1.5 pts)
-        if 'RSI' in last:
-            if 50 < last['RSI'] < 70:
-                score += 1.5
-            elif last['RSI'] >= 70: # Overbought caution
-                score += 0.5
-
-        # 3. Strategy Confluence (Adding points based on strategy_engine results)
-        if strategies_results.get("strategy_a") == "LONG":
+        # 2. Structural Contribution (Max 4.0)
+        if smc_data.get("bullish_choch"):
+            score += 2.5
+        if smc_data.get("at_order_block"):
             score += 1.5
-        if strategies_results.get("strategy_b") == "LONG":
-            score += 1.5
+        elif smc_data.get("bias") == "BULLISH":
+            score += 0.5
 
-        # 4. Volatility & Volume (Max 2.0 pts)
-        if 'OBV' in df.columns:
-            if last['OBV'] > df['OBV'].rolling(10).mean().iloc[-1]:
-                score += 1.0
+        # 3. Intelligence Contribution (Max 3.0)
+        # Combines Neural Confidence and MTF Alignment
+        intel_score = (neural_conf * 2.0) + (1.0 if mtf_aligned else 0.0)
+        score += min(intel_score, self.weights["intelligence"])
+
+        final_score = round(min(score, 10.0), 2)
         
-        # Ensure the score is capped at 10.0
-        final_score = min(float(score), 10.0)
-        return round(final_score, 1)
+        logger.info(f"Consensus Breakdown: Tech({tech_hits if tech_results else 0}), "
+                    f"SMC({smc_data.get('bias')}), Neural({round(neural_conf, 2)}) -> Score: {final_score}")
+        
+        return final_score
