@@ -1,43 +1,34 @@
 import requests
-import os
 import pandas as pd
 
 class OnChainFetcher:
     def __init__(self):
-        self.api_key = os.getenv('GLASSNODE_API_KEY')
-        self.url = "https://api.glassnode.com/v1/metrics/distribution/exchange_net_flow_sum"
+        # No API Key needed for DeFiLlama
+        self.base_url = "https://api.llama.fi"
 
-    def get_sentiment_score(self, asset="BTC"):
+    def get_ecosystem_health(self, chain="solana"):
         """
-        Fetches real on-chain netflow data.
-        Returns a score: 1.0 (Bullish), 0.0 (Neutral), -1.0 (Bearish).
+        Fetches TVL (Total Value Locked) for a specific chain.
+        Increasing TVL = Bullish institutional interest.
         """
-        if not self.api_key:
-            return 0.0
-
         try:
-            params = {
-                'a': asset,
-                'api_key': self.api_key,
-                'f': 'json',
-                'i': '24h'
-            }
-            response = requests.get(self.url, params=params)
-            data = response.json()
+            response = requests.get(f"{self.base_url}/tvl/{chain}")
+            if response.status_code == 200:
+                tvl = float(response.text)
+                return tvl
+            return 0
+        except Exception:
+            return 0
 
-            if not data or 'v' not in data[-1]:
-                return 0.0
-
-            # Latest net flow value
-            net_flow = data[-1]['v']
-            
-            # Logic: If net_flow < 0, whales are withdrawing (Bullish)
-            if net_flow < -500: # Threshold of 500 BTC/day
-                return 1.0
-            elif net_flow > 500: # Whales depositing
-                return -1.0
-            return 0.0
-
-        except Exception as e:
-            print(f"Glassnode API Error: {e}")
-            return 0.0
+    def get_global_sentiment(self):
+        """
+        Checks global stablecoin movement via CoinPaprika (Free).
+        """
+        try:
+            # Public endpoint for global market data
+            res = requests.get("https://api.coinpaprika.com/v1/global")
+            data = res.json()
+            # Market Cap Dominance of BTC
+            return data.get("bitcoin_dominance_percentage", 0)
+        except Exception:
+            return 50.0
