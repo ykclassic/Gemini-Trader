@@ -6,6 +6,11 @@ trading:
     - "BTC/USDT"
     - "ETH/USDT"
     - "SOL/USDT"
+    - "XRP/USDT"
+    - "ADA/USDT"
+    - "DOGE/USDT"
+    - "BNB/USDT" 
+    - "LINK/USDT" 
   timeframes:
     - "15m"
     - "1h"
