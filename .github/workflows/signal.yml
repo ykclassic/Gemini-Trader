@@ -1,66 +1,56 @@
-name: Unified Crypto Signal Engine
+name: Gemini-Trader Intelligence Pipeline
 
 on:
   schedule:
-    # Runs every 4 hours (at minute 0)
-    - cron: '0 */4 * * *'
-    # Runs every 15 minutes during weekday market hours (9 AM - 5 PM UTC)
-    - cron: '*/15 9-17 * * 1-5'
-  push:
-    branches: [ main, dev ]
-  workflow_dispatch: # Allows manual trigger for testing
+    # Runs every hour to scan for new structural setups
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    # Allows for manual triggering from the GitHub Actions UI
 
 jobs:
-  run-engine:
+  trade-scan:
     runs-on: ubuntu-latest
-    # Required permissions to commit the database update back to the repo
-    permissions:
-      contents: write
-
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: 'pip'
 
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential
-
-      - name: Install Python Dependencies
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create Data and Log Directories
-        run: mkdir -p data logs
+      - name: Ensure Data Directory Exists
+        run: mkdir -p data
 
-      - name: Run Engine Pipeline
+      - name: Run Gemini-Trader Engine
         env:
-          # API Keys and Secrets
-          BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
-          BINANCE_SECRET_KEY: ${{ secrets.BINANCE_SECRET_KEY }}
+          # XT Exchange Credentials
+          XT_API_KEY: ${{ secrets.XT_API_KEY }}
+          XT_SECRET_KEY: ${{ secrets.XT_SECRET_KEY }}
+          
+          # Phase 2: On-Chain Sentiment
           GLASSNODE_API_KEY: ${{ secrets.GLASSNODE_API_KEY }}
-          COINGLASS_API_KEY: ${{ secrets.COINGLASS_API_KEY }}
+          
+          # Phase 1: Notifications
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
-          # Path Configuration
+          
+          # System Constants
           DB_PATH: "data/signals.db"
-          LOG_LEVEL: "INFO"
+          PYTHONPATH: "."
         run: python -m bot.main
 
-      - name: Commit and Push Database Updates
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update signal database and performance logs [skip ci]"
-          file_pattern: 'data/signals.db logs/*.log'
-          commit_user_name: "GitHub Actions Bot"
-          commit_user_email: "actions@github.com"
-          commit_author: "GitHub Actions Bot <actions@github.com>"
+      - name: Persistence Sync (Commit Signal History)
+        # This step ensures the Neural Layer (Phase 4) has data to learn from
+        run: |
+          git config --global user.name "Gemini-Bot"
+          git config --global user.email "bot@gemini-trader.ai"
+          git add data/signals.db
+          git commit -m "chore: sync signal database [skip ci]" || echo "No changes to commit"
+          git push
