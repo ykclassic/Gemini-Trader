@@ -1,17 +1,20 @@
 # Exchange & Network
-ccxt==4.2.82
-requests==2.31.0
-python-dotenv==1.0.1
+ccxt>=4.2.0
+requests>=2.31.0
+python-dotenv>=1.0.0
 
 # Data Processing & Math
-pandas
-numpy
-scipy
-pandas-ta-classic
+# We remove strict pinning for pandas/numpy to let pip find the compatible middle ground
+pandas>=2.0.0
+numpy<2.0.0
+scipy>=1.10.0
+
+# Technical Analysis (Switched to standard pandas-ta for better compatibility)
+pandas-ta>=0.3.14b0
 
 # Neural Layer (Phase 4)
-scikit-learn==1.4.1.post1
-sqlite-utils==3.36
+scikit-learn>=1.4.0
+sqlite-utils>=3.36
 
 # Configuration & Utilities
-PyYAML==6.0.1
+PyYAML>=6.0.0
