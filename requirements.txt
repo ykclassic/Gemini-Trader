@@ -4,15 +4,17 @@ requests>=2.31.0
 python-dotenv>=1.0.0
 
 # Data Processing & Math
-# We remove strict pinning for pandas/numpy to let pip find the compatible middle ground
+# Forcing NumPy < 2.0 to ensure scikit-learn works
+numpy>=1.26.4,<2.0.0
 pandas>=2.0.0
-numpy<2.0.0
 scipy>=1.10.0
 
-# Technical Analysis (Switched to standard pandas-ta for better compatibility)
-pandas-ta>=0.3.14b0
+# Technical Analysis
+# Removed the 'b0' suffix to avoid distribution lookup errors
+pandas-ta
 
 # Neural Layer (Phase 4)
+# Using slightly more flexible versions to help the pip resolver
 scikit-learn>=1.4.0
 sqlite-utils>=3.36
 
