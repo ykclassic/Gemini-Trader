@@ -1,12 +1,19 @@
 # Environment & Secrets
+# Do not commit API keys or private credentials
 .env
 config/.env
 
 # Local Data & Logs
-data/*.db
+# Ignore general logs and pycache
 logs/*.log
 __pycache__/
 *.pyc
+
+# Persistence Logic (Phase 4 Neural Layer)
+# We ignore all databases EXCEPT for the signal history 
+# which is required for bot intelligence across GitHub Action runs.
+data/*.db
+!data/signals.db
 
 # Docker
 docker/.docker-compose.lock
