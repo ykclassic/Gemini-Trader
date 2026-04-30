@@ -11,7 +11,7 @@ scipy>=1.10.0
 
 # Technical Analysis
 # Removed the 'b0' suffix to avoid distribution lookup errors
-pandas-ta
+pandas-ta-classic
 
 # Neural Layer (Phase 4)
 # Using slightly more flexible versions to help the pip resolver
