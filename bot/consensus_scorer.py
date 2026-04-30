@@ -24,11 +24,13 @@ class ConsensusScorer:
         :param mtf_aligned: Boolean from MTFEngine
         """
         score = 0.0
+        tech_hits = 0  # Pre-define to ensure the logger always has a value
 
         # 1. Technical Contribution (Max 3.0)
         if tech_results:
-            long_hits = list(tech_results.values()).count("LONG")
-            tech_ratio = long_hits / len(tech_results)
+            # Replaced 'long_hits' with 'tech_hits' to fix the NameError
+            tech_hits = list(tech_results.values()).count("LONG")
+            tech_ratio = tech_hits / len(tech_results)
             score += tech_ratio * self.weights["technicals"]
 
         # 2. Structural Contribution (Max 4.0)
@@ -46,7 +48,8 @@ class ConsensusScorer:
 
         final_score = round(min(score, 10.0), 2)
         
-        logger.info(f"Consensus Breakdown: Tech({tech_hits if tech_results else 0}), "
+        # Safely log the breakdown now that tech_hits is strictly defined
+        logger.info(f"Consensus Breakdown: Tech({tech_hits}), "
                     f"SMC({smc_data.get('bias')}), Neural({round(neural_conf, 2)}) -> Score: {final_score}")
         
         return final_score
