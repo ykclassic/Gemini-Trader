@@ -15,7 +15,7 @@ trading:
     - "15m"
     - "1h"
     - "4h"
-  consensus_threshold: 7.0
+  consensus_threshold: 1.0
 
 indicators:
   ema_ribbon:
